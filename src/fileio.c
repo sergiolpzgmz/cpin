@@ -132,6 +132,45 @@ cpin_error_t fileio_load(char* file, char* line, char** result) {
     return (out_len > 0) ? CPIN_SUCCESS : CPIN_ERR_NOTE_NOT_FOUND;
 }
 
+// Loads all notes from .cpin/notes into a newly allocated string (*result).
+// Caller must free(*result).
+cpin_error_t fileio_load_all(char** result) {
+    if (!result) return CPIN_ERR_INVALID_ARGS;
+    *result = NULL;
+
+    FILE* f = fopen(CPIN_NOTES, "r");
+    if (!f) return CPIN_ERR_NOTE_NOT_FOUND;
+
+    char buf[4096];
+    char* out = NULL;
+    size_t out_len = 0;
+
+    while (fgets(buf, sizeof(buf), f)) {
+        char tmp[4096];
+        strncpy(tmp, buf, sizeof(tmp) - 1);
+        tmp[sizeof(tmp) - 1] = '\0';
+
+        char *tok_file, *tok_line, *tok_content;
+        if (parse_line(tmp, &tok_file, &tok_line, &tok_content) != 0) continue;
+
+        char display[4096];
+        int n = snprintf(display, sizeof(display), "%s:%s:%s\n",
+                         tok_file, tok_line, tok_content);
+        if (n <= 0) continue;
+
+        char* tmp_out = realloc(out, out_len + (size_t)n + 1);
+        if (!tmp_out) { free(out); fclose(f); return CPIN_ERR_WRITE_FAILED; }
+        out = tmp_out;
+        memcpy(out + out_len, display, (size_t)n);
+        out_len += (size_t)n;
+        out[out_len] = '\0';
+    }
+
+    fclose(f);
+    *result = out;
+    return (out_len > 0) ? CPIN_SUCCESS : CPIN_ERR_NOTE_NOT_FOUND;
+}
+
 // Deletes all notes matching file:line from .cpin/notes (rewrites the file).
 cpin_error_t fileio_delete(char* file, char* line) {
     if (!file) return CPIN_ERR_INVALID_ARGS;

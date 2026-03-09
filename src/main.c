@@ -8,7 +8,7 @@
 static void usage(void) {
     printf("Usage:\n");
     printf("  cpin add <file:line> \"<note>\"\n");
-    printf("  cpin list <file> [line]\n");
+    printf("  cpin list [file] [line]\n");
     printf("  cpin remove <file:line>\n");
 }
 
@@ -56,21 +56,26 @@ int main(int argc, char** argv) {
 
     // ── list ──────────────────────────────────────────────────────────────────
     if (!strcmp(cmd, "list")) {
-        if (argc < 3) {
-            printf("Usage: cpin list <file> [line]\n");
-            return 1;
-        }
-
-        char* file = argv[2];
-        char* line = (argc >= 4) ? argv[3] : NULL;
         char* result = NULL;
+        cpin_error_t err;
 
-        cpin_error_t err = fileio_load(file, line, &result);
-        if (err == CPIN_ERR_NOTE_NOT_FOUND || !result) {
-            printf("No notes found for %s%s%s\n",
-                   file, line ? ":" : "", line ? line : "");
-            return 0;
+        if (argc < 3) {
+            err = fileio_load_all(&result);
+            if (err == CPIN_ERR_NOTE_NOT_FOUND || !result) {
+                printf("No notes found in this project\n");
+                return 0;
+            }
+        } else {
+            char* file = argv[2];
+            char* line = (argc >= 4) ? argv[3] : NULL;
+            err = fileio_load(file, line, &result);
+            if (err == CPIN_ERR_NOTE_NOT_FOUND || !result) {
+                printf("No notes found for %s%s%s\n",
+                       file, line ? ":" : "", line ? line : "");
+                return 0;
+            }
         }
+
         if (err != CPIN_SUCCESS) {
             printf("Error: %s\n", error_to_string(err));
             return 1;
