@@ -46,4 +46,9 @@ cpin_error_t fileio_load(char* file, char* line, char** result);
 // Returns: CPIN_SUCCESS on success, or appropriate error code from error.h on failure
 cpin_error_t fileio_delete(char* file, char* line);
 
+// Loads all notes across the entire project into a newly allocated string (*result).
+// Caller must free(*result).
+// Returns: CPIN_SUCCESS on success, CPIN_ERR_NOTE_NOT_FOUND if no notes exist
+cpin_error_t fileio_load_all(char** result);
+
 #endif
