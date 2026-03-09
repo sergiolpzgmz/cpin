@@ -12,8 +12,8 @@
 
 cpin_note_t fileio_create_note(char* file, char* line, char* content) {
     cpin_note_t note;
-    note.file    = file    ? strdup(file)    : NULL;
-    note.line    = line    ? strdup(line)    : NULL;
+    note.file = file    ? strdup(file)    : NULL;
+    note.line = line    ? strdup(line)    : NULL;
     note.content = content ? strdup(content) : NULL;
     return note;
 }
@@ -67,7 +67,7 @@ cpin_error_t fileio_save(cpin_note_t* node) {
     return CPIN_SUCCESS;
 }
 
-// Parses one raw storage line (NUL-terminated, may include '\n') into parts.
+// Parses one raw storage line (NULL-terminated, may include '\n') into parts.
 // Splits only on the first two ':' so content may contain ':'.
 // Returns 0 on success, -1 if the line is malformed.
 static int parse_line(char* raw, char** out_file, char** out_line, char** out_content) {
