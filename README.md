@@ -24,7 +24,7 @@ Currently under development. Installation instructions will be available once th
 - [x] `add`, `list`, `remove` commands
 - [x] Single-file storage (`.cpin/notes`) in `file:line:content` format
 - [ ] `make install` target
-- [ ] `cpin list` with no arguments (show all notes in project)
+- [x] `cpin list` with no arguments (show all notes in project)
 
 ### v0.2 — Search & Export
 - [ ] `cpin search <keyword>` — grep across all notes
