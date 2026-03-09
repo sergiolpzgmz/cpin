@@ -19,7 +19,25 @@ cpin remove src/parser.c:42
 Currently under development. Installation instructions will be available once the tool is ready.
 
 ## Roadmap
-- [ ] Basic add/list/remove
-- [ ] Search across project
-- [ ] TUI interface
-- [ ] Neovim plugin
+
+### v0.1 — Core (in progress)
+- [x] `add`, `list`, `remove` commands
+- [x] Single-file storage (`.cpin/notes`) in `file:line:content` format
+- [ ] `make install` target
+- [ ] `cpin list` with no arguments (show all notes in project)
+
+### v0.2 — Search & Export
+- [ ] `cpin search <keyword>` — grep across all notes
+- [ ] `cpin export` — print notes as Markdown or JSON
+- [ ] Per-project (`.cpin/`) vs global (`~/.cpin/`) storage via flag
+
+### v0.3 — Editor Integration
+- [ ] Git hook: warn when a noted line has moved or been deleted
+- [ ] TUI interface (ncurses) for browsing notes
+- [ ] Neovim plugin — show inline virtual text for noted lines
+- [ ] VSCode extension
+
+### v1.0 — Open Source Release
+- [ ] `brew` formula / package manager distribution
+- [ ] Stable CLI interface with man page
+- [ ] CI/CD pipeline with tests
