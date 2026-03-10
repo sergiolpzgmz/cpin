@@ -5,10 +5,15 @@ all:
 	$(CC) $(CFLAGS) src/*.c -o cpin
 
 clean:
-	rm -f cpin 
+	rm -f cpin
 
 run:
-	./cpin 
+	./cpin
 
-.PHONY:
-	.PHONY: all clean run
+install: all
+	cp cpin /usr/local/bin/cpin
+
+uninstall:
+	rm -f /usr/local/bin/cpin
+
+.PHONY: all clean run install uninstall
