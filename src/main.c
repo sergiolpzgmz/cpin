@@ -7,23 +7,49 @@
 
 static void usage(void) {
     printf("Usage:\n");
-    printf("  cpin add <file:line> \"<note>\"\n");
-    printf("  cpin list [file] [line]\n");
-    printf("  cpin remove <file:line>\n");
+    printf("  cpin add <file:line> \"<note>\" [--global]\n");
+    printf("  cpin list [file] [line] [--global]\n");
+    printf("  cpin remove <file:line> [--global]\n");
+}
+
+static const char* resolve_notes_path(int global) {
+    if (!global) return ".cpin/notes";
+
+    static char path[4096];
+    const char* home = getenv("HOME");
+    if (!home) {
+        fprintf(stderr, "Error: $HOME is not set\n");
+        exit(1);
+    }
+    snprintf(path, sizeof(path), "%s/.cpin/notes", home);
+    return path;
 }
 
 int main(int argc, char** argv) {
+    // Strip --global flag from argv before command dispatch
+    int global = 0;
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--global") == 0) {
+            global = 1;
+            for (int j = i; j < argc - 1; j++)
+                argv[j] = argv[j + 1];
+            argc--;
+            break;
+        }
+    }
+
     if (argc < 2) {
         usage();
         return 1;
     }
 
+    const char* notes_path = resolve_notes_path(global);
     char* cmd = argv[1];
 
     // ── add ───────────────────────────────────────────────────────────────────
     if (!strcmp(cmd, "add")) {
         if (argc < 4) {
-            printf("Usage: cpin add <file:line> \"<note>\"\n");
+            printf("Usage: cpin add <file:line> \"<note>\" [--global]\n");
             return 1;
         }
 
@@ -42,7 +68,7 @@ int main(int argc, char** argv) {
         }
 
         cpin_note_t note = fileio_create_note(file, line, content);
-        err = fileio_save(&note);
+        err = fileio_save(&note, notes_path);
         fileio_note_free(&note);
 
         if (err != CPIN_SUCCESS) {
@@ -60,15 +86,15 @@ int main(int argc, char** argv) {
         cpin_error_t err;
 
         if (argc < 3) {
-            err = fileio_load_all(&result);
+            err = fileio_load_all(notes_path, &result);
             if (err == CPIN_ERR_NOTE_NOT_FOUND || !result) {
-                printf("No notes found in this project\n");
+                printf("No notes found\n");
                 return 0;
             }
         } else {
             char* file = argv[2];
             char* line = (argc >= 4) ? argv[3] : NULL;
-            err = fileio_load(file, line, &result);
+            err = fileio_load(file, line, notes_path, &result);
             if (err == CPIN_ERR_NOTE_NOT_FOUND || !result) {
                 printf("No notes found for %s%s%s\n",
                        file, line ? ":" : "", line ? line : "");
@@ -89,7 +115,7 @@ int main(int argc, char** argv) {
     // ── remove ────────────────────────────────────────────────────────────────
     if (!strcmp(cmd, "remove")) {
         if (argc < 3) {
-            printf("Usage: cpin remove <file:line>\n");
+            printf("Usage: cpin remove <file:line> [--global]\n");
             return 1;
         }
 
@@ -101,7 +127,7 @@ int main(int argc, char** argv) {
             return 1;
         }
 
-        err = fileio_delete(file, line);
+        err = fileio_delete(file, line, notes_path);
         if (err != CPIN_SUCCESS) {
             printf("Error: %s\n", error_to_string(err));
             return 1;

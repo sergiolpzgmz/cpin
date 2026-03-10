@@ -5,9 +5,6 @@
 #include "errors.h"
 #include "fileio.h"
 
-#define CPIN_DIR   ".cpin"
-#define CPIN_NOTES ".cpin/notes"
-
 // ── note lifecycle ────────────────────────────────────────────────────────────
 
 cpin_note_t fileio_create_note(char* file, char* line, char* content) {
@@ -28,12 +25,19 @@ void fileio_note_free(cpin_note_t* note) {
 
 // ── storage helpers ───────────────────────────────────────────────────────────
 
-// Ensures the .cpin directory exists.
-cpin_error_t fileio_initialize(cpin_note_t* node) {
-    (void)node;
+// Ensures the directory containing notes_path exists.
+static cpin_error_t fileio_initialize(const char* notes_path) {
+    char dir[4096];
+    strncpy(dir, notes_path, sizeof(dir) - 1);
+    dir[sizeof(dir) - 1] = '\0';
+
+    char* slash = strrchr(dir, '/');
+    if (!slash) return CPIN_SUCCESS;
+    *slash = '\0';
+
     struct stat st = {0};
-    if (stat(CPIN_DIR, &st) == -1) {
-        if (mkdir(CPIN_DIR, 0755) != 0)
+    if (stat(dir, &st) == -1) {
+        if (mkdir(dir, 0755) != 0)
             return CPIN_ERR_STORAGE_INIT;
     }
     return CPIN_SUCCESS;
@@ -41,21 +45,21 @@ cpin_error_t fileio_initialize(cpin_note_t* node) {
 
 // ── single-file storage ───────────────────────────────────────────────────────
 //
-// Every note occupies exactly one line in .cpin/notes:
+// Every note occupies exactly one line in the notes file:
 //
 //   src/memory.c:87:potential leak here
 //
 // The file and line fields may not contain ':'.
 // The content field may contain ':' — we only split on the first two.
 
-// Appends a note to .cpin/notes.
-cpin_error_t fileio_save(cpin_note_t* node) {
+// Appends a note to the notes file.
+cpin_error_t fileio_save(cpin_note_t* node, const char* notes_path) {
     if (!node || !node->file || !node->content) return CPIN_ERR_INVALID_ARGS;
 
-    cpin_error_t err = fileio_initialize(node);
+    cpin_error_t err = fileio_initialize(notes_path);
     if (err != CPIN_SUCCESS) return err;
 
-    FILE* f = fopen(CPIN_NOTES, "a");
+    FILE* f = fopen(notes_path, "a");
     if (!f) return CPIN_ERR_WRITE_FAILED;
 
     if (node->line && node->line[0] != '\0')
@@ -92,11 +96,11 @@ static int parse_line(char* raw, char** out_file, char** out_line, char** out_co
 
 // Loads notes matching file (and optionally line) into a newly allocated
 // string (*result).  Caller must free(*result).
-cpin_error_t fileio_load(char* file, char* line, char** result) {
+cpin_error_t fileio_load(char* file, char* line, const char* notes_path, char** result) {
     if (!file || !result) return CPIN_ERR_INVALID_ARGS;
     *result = NULL;
 
-    FILE* f = fopen(CPIN_NOTES, "r");
+    FILE* f = fopen(notes_path, "r");
     if (!f) return CPIN_ERR_NOTE_NOT_FOUND;
 
     char buf[4096];
@@ -132,13 +136,13 @@ cpin_error_t fileio_load(char* file, char* line, char** result) {
     return (out_len > 0) ? CPIN_SUCCESS : CPIN_ERR_NOTE_NOT_FOUND;
 }
 
-// Loads all notes from .cpin/notes into a newly allocated string (*result).
+// Loads all notes from the notes file into a newly allocated string (*result).
 // Caller must free(*result).
-cpin_error_t fileio_load_all(char** result) {
+cpin_error_t fileio_load_all(const char* notes_path, char** result) {
     if (!result) return CPIN_ERR_INVALID_ARGS;
     *result = NULL;
 
-    FILE* f = fopen(CPIN_NOTES, "r");
+    FILE* f = fopen(notes_path, "r");
     if (!f) return CPIN_ERR_NOTE_NOT_FOUND;
 
     char buf[4096];
@@ -171,11 +175,11 @@ cpin_error_t fileio_load_all(char** result) {
     return (out_len > 0) ? CPIN_SUCCESS : CPIN_ERR_NOTE_NOT_FOUND;
 }
 
-// Deletes all notes matching file:line from .cpin/notes (rewrites the file).
-cpin_error_t fileio_delete(char* file, char* line) {
+// Deletes all notes matching file:line from the notes file (rewrites the file).
+cpin_error_t fileio_delete(char* file, char* line, const char* notes_path) {
     if (!file) return CPIN_ERR_INVALID_ARGS;
 
-    FILE* f = fopen(CPIN_NOTES, "r");
+    FILE* f = fopen(notes_path, "r");
     if (!f) return CPIN_ERR_NOTE_NOT_FOUND;
 
     // Read all raw lines into memory
@@ -197,7 +201,7 @@ cpin_error_t fileio_delete(char* file, char* line) {
     fclose(f);
 
     // Rewrite without matching lines
-    FILE* out = fopen(CPIN_NOTES, "w");
+    FILE* out = fopen(notes_path, "w");
     if (!out) {
         for (size_t i = 0; i < count; i++) free(lines[i]);
         free(lines);

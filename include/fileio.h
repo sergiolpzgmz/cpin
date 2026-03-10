@@ -20,35 +20,31 @@ cpin_note_t fileio_create_note(char* file, char* line, char* content);
 // @note: pointer to the note structure to free (must not be NULL)
 void fileio_note_free(cpin_note_t* note);
 
+// Saves a note to the given notes file path
+// @node: the note to save
+// @notes_path: path to the notes file (local or global)
+// Returns: CPIN_SUCCESS on success, or appropriate error code on failure
+cpin_error_t fileio_save(cpin_note_t* node, const char* notes_path);
 
-// Initializes the hidden .cpin/ subdirectory for cpin configuration
-// Creates the necessary directory structure if it doesn't exist
-// Returns: CPIN_SUCCESS on success, or appropriate error code from error.h on failure
-cpin_error_t fileio_initialize(cpin_note_t* node);
+// Loads notes matching file (and optionally line) into a newly allocated string (*result).
+// @file: path to the file to filter by
+// @line: specific line number to filter by (can be NULL for entire file)
+// @notes_path: path to the notes file (local or global)
+// @result: pointer to store the loaded results — caller must free(*result)
+// Returns: CPIN_SUCCESS on success, or appropriate error code on failure
+cpin_error_t fileio_load(char* file, char* line, const char* notes_path, char** result);
 
-// Saves an individual node to the specified file and line location
-// @file: path to the file where the node should be saved
-// @line: line number in the file (can be NULL for default positioning)
-// @node: node identifier to save
-// Returns: CPIN_SUCCESS on success, or appropriate error code from error.h on failure
-cpin_error_t fileio_save(cpin_note_t* node);
-
-// Loads nodes from a specified file and optionally line
-// @file: path to the file to load from
-// @line: specific line number to load from (can be NULL for entire file)
-// @result: pointer to store the loaded results (must be pre-allocated)
-// Returns: CPIN_SUCCESS on success, or appropriate error code from error.h on failure
-cpin_error_t fileio_load(char* file, char* line, char** result);
-
-// Deletes a specified node from the file:line format
-// @file: path to the file containing the node
-// @line: line number where the note is located
-// Returns: CPIN_SUCCESS on success, or appropriate error code from error.h on failure
-cpin_error_t fileio_delete(char* file, char* line);
-
-// Loads all notes across the entire project into a newly allocated string (*result).
-// Caller must free(*result).
+// Loads all notes from the notes file into a newly allocated string (*result).
+// @notes_path: path to the notes file (local or global)
+// @result: pointer to store the loaded results — caller must free(*result)
 // Returns: CPIN_SUCCESS on success, CPIN_ERR_NOTE_NOT_FOUND if no notes exist
-cpin_error_t fileio_load_all(char** result);
+cpin_error_t fileio_load_all(const char* notes_path, char** result);
+
+// Deletes all notes matching file:line from the notes file (rewrites the file).
+// @file: path to the file containing the note
+// @line: line number where the note is located
+// @notes_path: path to the notes file (local or global)
+// Returns: CPIN_SUCCESS on success, or appropriate error code on failure
+cpin_error_t fileio_delete(char* file, char* line, const char* notes_path);
 
 #endif

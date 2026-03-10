@@ -7,13 +7,26 @@ lines and saves your notes localy without touching your source files.
 # Add a note to line 42 in parser.c
 cpin add src/parser.c:42 "why does this loop start at 1?"
 
+# Add a note to your global store (~/.cpin/notes)
+cpin add src/parser.c:42 "personal reminder" --global
+
 # List all notes for a specific file
 cpin list src/parser.c
+
+# List all notes in the global store
+cpin list --global
 
 # Remove a note from line 42 in parser.c
 cpin remove src/parser.c:42
 
+# Remove a note from the global store
+cpin remove src/parser.c:42 --global
 ```
+
+### `--global` flag
+By default, notes are stored in `.cpin/notes` inside your project directory.
+Pass `--global` to store notes in `~/.cpin/notes` instead — useful for personal
+reminders on files outside a project or notes you don't want committed.
 
 ## Installation
 
@@ -44,7 +57,7 @@ make uninstall     # may require sudo
 ### v0.2 — Search & Export
 - [ ] `cpin search <keyword>` — grep across all notes
 - [ ] `cpin export` — print notes as Markdown or JSON
-- [ ] Per-project (`.cpin/`) vs global (`~/.cpin/`) storage via flag
+- [x] Per-project (`.cpin/`) vs global (`~/.cpin/`) storage via `--global` flag
 
 ### v0.3 — Editor Integration
 - [ ] Git hook: warn when a noted line has moved or been deleted
