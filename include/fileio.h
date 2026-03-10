@@ -9,6 +9,11 @@ typedef struct {
     char* content;   // Actual content of the note
 } cpin_note_t;
 
+// Checks if the error code indicates 'No such file or directory'
+// @e: the errno value to check
+// Returns: true if the error is ENOENT, false otherwise
+#define FILE_NOT_FOUND(e) ((e) == ENOENT)
+
 // Creates a new cpin note structure with the specified file, line, and content
 // @file: path to the file where the note belongs
 // @line: line number in the file (can be NULL)
@@ -50,5 +55,10 @@ cpin_error_t fileio_delete(char* file, char* line);
 // Caller must free(*result).
 // Returns: CPIN_SUCCESS on success, CPIN_ERR_NOTE_NOT_FOUND if no notes exist
 cpin_error_t fileio_load_all(char** result);
+
+// Check if target file exist on disk
+// @file: path to the file to be checked on the disk
+// Returns: CPIN_SUCCESS on success, CPIN_ERR_FILE_NOT_EXIST if no file exist
+cpin_error_t fileio_file_exist(char* file);
 
 #endif

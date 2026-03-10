@@ -10,6 +10,7 @@ const char* error_to_string(cpin_error_t error) {
         case CPIN_ERR_STORAGE_INIT:    return "failed to initialize .cpin storage";
         case CPIN_ERR_NOTE_NOT_FOUND:  return "note not found";
         case CPIN_ERR_WRITE_FAILED:    return "write failed";
+        case CPIN_ERR_FILE_ACCESS:      return "Cannot access file";
         default:                       return "unknown error";
     }
 }
