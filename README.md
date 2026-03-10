@@ -16,14 +16,29 @@ cpin remove src/parser.c:42
 ```
 
 ## Installation
-Currently under development. Installation instructions will be available once the tool is ready.
+
+### Requirements
+- clang (or any C compiler)
+- make
+
+### Build & Install
+```bash
+git clone git@github.com:jonaebel/cpin.git
+cd cpin
+make install       # may require sudo
+```
+
+To uninstall:
+```bash
+make uninstall     # may require sudo
+```
 
 ## Roadmap
 
 ### v0.1 — Core (in progress)
 - [x] `add`, `list`, `remove` commands
 - [x] Single-file storage (`.cpin/notes`) in `file:line:content` format
-- [ ] `make install` target
+- [x] `make install` target
 - [x] `cpin list` with no arguments (show all notes in project)
 
 ### v0.2 — Search & Export
