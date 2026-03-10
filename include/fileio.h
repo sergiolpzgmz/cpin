@@ -47,4 +47,11 @@ cpin_error_t fileio_load_all(const char* notes_path, char** result);
 // Returns: CPIN_SUCCESS on success, or appropriate error code on failure
 cpin_error_t fileio_delete(char* file, char* line, const char* notes_path);
 
+// Searches all notes for lines whose content contains the given keyword.
+// @keyword: substring to search for in note content
+// @notes_path: path to the notes file (local or global)
+// @result: pointer to store the matching results — caller must free(*result)
+// Returns: CPIN_SUCCESS on success, CPIN_ERR_NOTE_NOT_FOUND if no matches
+cpin_error_t fileio_search(const char* keyword, const char* notes_path, char** result);
+
 #endif

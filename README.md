@@ -21,6 +21,10 @@ cpin remove src/parser.c:42
 
 # Remove a note from the global store
 cpin remove src/parser.c:42 --global
+
+# Search a note (global flag is working like above)
+cpin search "personal" --global
+
 ```
 
 ### `--global` flag

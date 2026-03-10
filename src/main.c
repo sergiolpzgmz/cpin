@@ -10,6 +10,7 @@ static void usage(void) {
     printf("  cpin add <file:line> \"<note>\" [--global]\n");
     printf("  cpin list [file] [line] [--global]\n");
     printf("  cpin remove <file:line> [--global]\n");
+    printf("  cpin search <keyword> [--global]\n");
 }
 
 static const char* resolve_notes_path(int global) {
@@ -134,6 +135,29 @@ int main(int argc, char** argv) {
         }
 
         printf("Note removed: %s:%s\n", file, line);
+        return 0;
+    }
+
+    // ── search ────────────────────────────────────────────────────────────────
+    if (!strcmp(cmd, "search")) {
+        if (argc < 3) {
+            printf("Usage: cpin search <keyword> [--global]\n");
+            return 1;
+        }
+
+        char* result = NULL;
+        cpin_error_t err = fileio_search(argv[2], notes_path, &result);
+        if (err == CPIN_ERR_NOTE_NOT_FOUND || !result) {
+            printf("No notes matching \"%s\"\n", argv[2]);
+            return 0;
+        }
+        if (err != CPIN_SUCCESS) {
+            printf("Error: %s\n", error_to_string(err));
+            return 1;
+        }
+
+        printf("%s", result);
+        free(result);
         return 0;
     }
 
