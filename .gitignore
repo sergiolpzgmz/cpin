@@ -1,0 +1,42 @@
+# Compiled output
+cpin
+*.o
+*.a
+*.so
+*.out
+
+# Build directories
+build/
+dist/
+bin/
+
+# Debug files
+*.dSYM/
+*.su
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*.vim
+.netrwhist
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Dependencies
+lib/
+vendor/
+
+# Test output
+test_output/
+*.test
+
+# Annotations file
+# (you probably dont want your own
+# cpin notes tracked in git)
+.cpin/
+.annotations.json

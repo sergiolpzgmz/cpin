@@ -25,7 +25,24 @@ cpin remove src/parser.c:42 --global
 # Search a note (global flag is working like above)
 cpin search "personal" --global
 
+# Export all notes as plain text
+cpin export
+
+# Export all notes as JSON
+cpin export --json
+
+# Export all notes as Markdown
+cpin export --md
+
+# Pipe Markdown export to a file
+cpin export --md > NOTES.md
+
 ```
+
+### `--json` and `--md` flags
+`cpin export` prints all notes as plain text by default.
+Pass `--json` for a machine-readable JSON array, or `--md` for formatted Markdown grouped by file.
+Both flags work with `--global`.
 
 ### `--global` flag
 By default, notes are stored in `.cpin/notes` inside your project directory.
@@ -59,8 +76,9 @@ make uninstall     # may require sudo
 - [x] `cpin list` with no arguments (show all notes in project)
 
 ### v0.2 — Search & Export
-- [ ] `cpin search <keyword>` — grep across all notes
-- [ ] `cpin export` — print notes as Markdown or JSON
+- [x] `cpin search <keyword>` — grep across all notes
+- [x] `cpin export --json` — print notes as JSON array
+- [x] `cpin export --md` — print notes as Markdown grouped by file
 - [x] Per-project (`.cpin/`) vs global (`~/.cpin/`) storage via `--global` flag
 
 ### v0.3 — Editor Integration
