@@ -11,7 +11,7 @@ static void usage(void) {
     printf("  cpin list [file] [line] [--global]\n");
     printf("  cpin remove <file:line> [--global]\n");
     printf("  cpin search <keyword> [--global]\n");
-    printf("  cpin export [--json] [--global]\n");
+    printf("  cpin export [--json|--md] [--global]\n");
 }
 
 static void print_json_string(const char* s) {
@@ -59,6 +59,18 @@ int main(int argc, char** argv) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "--json") == 0) {
             json = 1;
+            for (int j = i; j < argc - 1; j++)
+                argv[j] = argv[j + 1];
+            argc--;
+            break;
+        }
+    }
+
+    // Strip --md flag from argv before command dispatch
+    int md = 0;
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--md") == 0) {
+            md = 1;
             for (int j = i; j < argc - 1; j++)
                 argv[j] = argv[j + 1];
             argc--;
@@ -209,48 +221,83 @@ int main(int argc, char** argv) {
             return 1;
         }
 
-        if (!json) {
-            printf("%s", result);
+        if (json && md) {
+            printf("Error: --json and --md are mutually exclusive\n");
             free(result);
-            return 0;
+            return 1;
         }
+        else if (json) {
+            printf("[\n");
+            int first = 1;
+            char* line = result;
+            while (*line) {
+                char* newline = strchr(line, '\n');
+                if (newline) *newline = '\0';
 
-        printf("[\n");
-        int first = 1;
-        char* line = result;
-        while (*line) {
-            char* newline = strchr(line, '\n');
-            if (newline) *newline = '\0';
+                char tmp[4096];
+                strncpy(tmp, line, sizeof(tmp) - 1);
+                tmp[sizeof(tmp) - 1] = '\0';
 
-            char tmp[4096];
-            strncpy(tmp, line, sizeof(tmp) - 1);
-            tmp[sizeof(tmp) - 1] = '\0';
+                // Split on first two ':'
+                char* first_colon = strchr(tmp, ':');
+                if (first_colon) {
+                    *first_colon = '\0';
+                    char* tok_file = tmp;
+                    char* second_colon = strchr(first_colon + 1, ':');
+                    if (second_colon) {
+                        *second_colon = '\0';
+                        char* tok_line    = first_colon + 1;
+                        char* tok_content = second_colon + 1;
 
-            // Split on first two ':'
-            char* first_colon = strchr(tmp, ':');
-            if (first_colon) {
-                *first_colon = '\0';
-                char* tok_file = tmp;
-                char* second_colon = strchr(first_colon + 1, ':');
-                if (second_colon) {
-                    *second_colon = '\0';
-                    char* tok_line    = first_colon + 1;
-                    char* tok_content = second_colon + 1;
-
-                    if (!first) printf(",\n");
-                    printf("  {\"file\": ");
-                    print_json_string(tok_file);
-                    printf(", \"line\": %s, \"note\": ", tok_line);
-                    print_json_string(tok_content);
-                    printf("}");
-                    first = 0;
+                        if (!first) printf(",\n");
+                        printf("  {\"file\": ");
+                        print_json_string(tok_file);
+                        printf(", \"line\": %s, \"note\": ", tok_line);
+                        print_json_string(tok_content);
+                        printf("}");
+                        first = 0;
+                    }
                 }
-            }
 
-            if (!newline) break;
-            line = newline + 1;
+                if (!newline) break;
+                line = newline + 1;
+            }
+            printf("\n]\n");
+        } else if (md) {
+            char* line = result;
+            char prev_file[4096] = {0};
+            while (*line) {
+                char* newline = strchr(line, '\n');
+                if (newline) *newline = '\0';
+
+                char tmp[4096];
+                strncpy(tmp, line, sizeof(tmp) - 1);
+                tmp[sizeof(tmp) - 1] = '\0';
+
+                char* first_colon = strchr(tmp, ':');
+                if (first_colon) {
+                    *first_colon = '\0';
+                    char* tok_file = tmp;
+                    char* second_colon = strchr(first_colon + 1, ':');
+                    if (second_colon) {
+                        *second_colon = '\0';
+                        char* tok_line    = first_colon + 1;
+                        char* tok_content = second_colon + 1;
+
+                        if (strcmp(tok_file, prev_file) != 0) {
+                            printf("## %s\n\n", tok_file);
+                            strncpy(prev_file, tok_file, sizeof(prev_file) - 1);
+                        }
+                        printf("Line %s: %s\n", tok_line, tok_content);
+                    }
+                }
+
+                if (!newline) break;
+                line = newline + 1;
+            }
+        } else {
+            printf("%s", result);
         }
-        printf("\n]\n");
 
         free(result);
         return 0;
