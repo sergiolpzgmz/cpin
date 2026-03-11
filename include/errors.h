@@ -11,6 +11,7 @@ typedef enum {
     CPIN_ERR_STORAGE_INIT,      // Failed to initialize storage directory
     CPIN_ERR_NOTE_NOT_FOUND,    // Specified node/entry not found
     CPIN_ERR_WRITE_FAILED,      // Failed to write to file or storage
+    CPIN_ERR_FILE_ACCESS,       // File access error
 } cpin_error_t;
 
 // Converts an error code to a human-readable string representation

@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -271,4 +272,22 @@ cpin_error_t fileio_delete(char* file, char* line, const char* notes_path) {
     fclose(out);
 
     return deleted ? CPIN_SUCCESS : CPIN_ERR_NOTE_NOT_FOUND;
+}
+
+// Checks if a file exists on disk.
+// Returns: CPIN_SUCCESS if file exists, CPIN_ERR_FILE_NOT_FOUND if not found,
+// or CPIN_ERR_FILE_ACCESS for other errors.
+cpin_error_t fileio_file_exist(char* file) {
+    if (!file) return CPIN_ERR_INVALID_ARGS;
+
+    FILE* found_file = fopen(file, "r");
+    if (found_file == NULL) {
+        if (FILE_NOT_FOUND(errno)) {
+            return CPIN_ERR_FILE_NOT_FOUND;
+        }
+        return CPIN_ERR_FILE_ACCESS;
+    }
+
+    fclose(found_file);
+    return CPIN_SUCCESS;
 }

@@ -68,6 +68,12 @@ int main(int argc, char** argv) {
             return 1;
         }
 
+        err = fileio_file_exist(file);
+        if (err != CPIN_SUCCESS) {
+            printf("Error: %s\n", error_to_string(err));
+            return 1;
+        }
+
         cpin_note_t note = fileio_create_note(file, line, content);
         err = fileio_save(&note, notes_path);
         fileio_note_free(&note);
